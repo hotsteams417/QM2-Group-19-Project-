@@ -1,0 +1,39 @@
+import plotly.express as px
+import plotly.graph_objects as go
+
+import pandas as pd
+
+
+# read the csv file from your computer
+data_path = "/Users/michalgwozdz/Desktop/vegan earth/meat-supply-per-person.csv"
+
+#trim the dataframe
+meat_per_capita = pd.read_csv(data_path)
+meat_per_capita = meat_per_capita[meat_per_capita['Year'] == 2017]
+
+df = meat_per_capita
+
+#produce Choropleth map 
+#code adapated from https://plotly.com/python/choropleth-maps/
+fig = go.Figure(data=go.Choropleth(
+    locations = df['Code'],
+    z = df['Meat food supply quantity (kg/capita/yr) (FAO, 2020)'],
+    text = df['Entity'],
+    colorscale = "Reds",
+    autocolorscale=False,
+    reversescale=False,
+    marker_line_color='darkgray',
+    marker_line_width=0.5,
+    colorbar_title = 'Annual Meat Consumption in kg (per capita)'
+))
+
+fig.update_layout(
+    title_text='2017 Global Annual Meat Consumption in kg (per capita)',
+    geo=dict(
+        showframe=False,
+        showcoastlines=False,
+        projection_type='equirectangular'
+    ),
+)
+
+fig.show()
