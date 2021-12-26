@@ -1,0 +1,63 @@
+import plotly.express as px
+import plotly.graph_objects as go
+import pandas as pd
+
+
+# read the csv file from your computer
+data_path = "/Users/michalgwozdz/Desktop/vegan earth/co-emissions-per-capita.csv"
+
+#read data 
+emissions_per_capita = pd.read_csv(data_path)
+#trim dataframe to show data for the relevant year
+emissions_per_capita = emissions_per_capita[emissions_per_capita['Year'] == 2020]
+
+data_with_index = emissions_per_capita.set_index("Entity")
+
+# Drop rows containing data for continents:
+data_with_index = data_with_index.drop([
+"Asia (excl. China & India)",
+"Africa",
+"Asia", 
+"EU-27", 
+"EU-28", 
+"Europe", 
+"Europe (excl. EU-27)",
+"Europe (excl. EU-28)", 
+"North America",
+"North America (excl. USA)",
+"Oceania",
+"South America",
+"World"
+])
+
+#drop Year column
+data_with_index = data_with_index.drop(['Year'], axis = 1)
+data_with_index = data_with_index.reset_index()
+
+df = data_with_index
+
+#produce Choropleth map
+#code adapated from https://plotly.com/python/choropleth-maps/
+
+fig = go.Figure(data=go.Choropleth(
+    locations = df['Code'],
+    z = df['Annual CO2 emissions (per capita)'],
+    text = df['Entity'],
+    colorscale = "Blues",
+    autocolorscale=False,
+    reversescale=False,
+    marker_line_color='darkgray',
+    marker_line_width=0.5,
+    colorbar_title = 'Annual CO2 emissions in tonnes (per capita)'
+))
+
+fig.update_layout(
+    title_text='2020 Global CO2 Emissions (per capita)',
+    geo=dict(
+        showframe=False,
+        showcoastlines=False,
+        projection_type='equirectangular'
+    ),
+)
+
+fig.show()
