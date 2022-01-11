@@ -1,0 +1,114 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import geopandas as gp
+from scipy.stats import linregress
+import random
+
+
+
+#mydf = pd.read_csv("meat_co2_pc_final.csv")
+datapath = "/Users/michalgwozdz/Desktop/vegan earth/meat_CO2_v4.csv"
+mydf = pd.read_csv(datapath)
+print(mydf)
+
+fig = plt.figure()
+ax = fig.add_subplot()
+lines = ax.plot(mydf.meat_kg_pc,mydf.CO2_tonnes_pc,'b.')
+
+
+(slope, intercept, rvalue, pvalue, stderr) = linregress(mydf.meat_kg_pc,mydf.CO2_tonnes_pc)
+print(f"slope is: {slope:.3g}, intercept is: {intercept:.3g}")
+print(f"equation: y = x*{slope:.3g} + {intercept:.3g}")
+rsquared = rvalue*rvalue
+print(f"R-squared value is {rsquared:.3g}")
+
+# plot data points
+ax = mydf.plot(x='meat_kg_pc',y='CO2_tonnes_pc',kind='scatter')
+
+# to draw line we take x values at each end of the plot
+x0 = 0
+x1 = 150
+
+# then use eqn to find corresponding y-values
+y0 = x0*slope+intercept
+y1 = x1*slope+intercept
+
+# we can now plot a line from (x0,y0) to (x1,y1)
+ax.plot([x0,x1],[y0,y1],'r-')
+ax.text(5, 29, f"R**2: {rsquared:.3g}");
+ax.text(5, 27, f"equation: y = x*{slope:.3g} +{intercept:.3g}")
+ax.set_title("CO2 emissions per capita (tonnes) against meat consumption per capita (kg) worldwide")
+ax.set_xlabel("Meat consumption per capita (kg)")
+ax.set_ylabel("CO2 emissions per capita (tonnes)")
+
+np.random.seed(42)
+N = len(mydf)
+colors = np.random.rand(N)
+area = (25 * np.random.rand(N))**2
+
+df = pd.DataFrame({
+    'X': mydf.meat_kg_pc,
+    'Y': mydf.CO2_tonnes_pc,
+    'Colors': colors,
+    "bubble_size":area})
+plt.figure(figsize = (10,5))
+plt.scatter('X', 'Y', 
+             s='bubble_size',
+             alpha=0.5, 
+             data=df)
+plt.title("CO2 emissions per capita (tonnes) against meat consumption per capita (kg) worldwide", size=17)
+plt.xlabel("Meat consumption per capita (kg)", size=15)
+plt.ylabel("CO2 emissions per capita (tonnes)", size=15)
+
+import plotly.graph_objects as go
+
+
+population = []
+for i in range(len(mydf)):
+  population.append(mydf.population[i])
+
+population2 = []
+for i in range(len(population)):
+  if population[i] <= 100000:
+    population2.append(2)
+  elif population[i] <= 1000000:
+    population2.append(5)
+  elif population[i] <= 10000000:
+    population2.append(10)
+  elif population[i] <= 100000000:
+    population2.append(25)
+  elif population[i] <= 1000000000:
+    population2.append(35)
+  elif population[i] <= 10000000000:
+    population2.append(100)
+#population2.append(population[i]/10000000)
+print(population2)
+
+np.random.seed(42)
+N = len(mydf)
+colors = np.random.rand(N)
+    
+fig = plt = go.Figure(data=[go.Scatter(
+    x=mydf.meat_kg_pc, y=mydf.CO2_tonnes_pc,
+    text=mydf.country,
+    mode='markers',
+    marker=dict(
+        color=colors,
+        size=population2)
+)])
+
+plt.update_layout(
+    title = "CO2 emissions per capita (tonnes) against meat consumption per capita (kg) worldwide",
+    xaxis_title = "Meat consumption per capita (kg)",
+    yaxis_title = "CO2 emissions per capita (tonnes)"
+   
+)
+
+import plotly.io as pio
+
+pio.write_html(fig, file= 'CO2vsMEAT.html', auto_open=True)
+
+
+
+plt.show()
